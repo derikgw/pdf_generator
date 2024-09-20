@@ -4,7 +4,7 @@ from reportlab.lib import colors  # Import the colors module
 from pdfrw import PdfWriter
 
 # Path to the output PDF
-template_path = 'data/editable_template.pdf'
+template_path = 'data/template.pdf'
 
 def create_editable_pdf(template_path):
     # Create a blank PDF with a form field
