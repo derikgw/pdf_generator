@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: An AWS Serverless Application Model template for a PDF processing function.
+
+Resources:
+  pdffunctiontest:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.12
+      MemorySize: 128
+      Timeout: 3
+      Events:
+        Api1:
+          Type: Api
+          Properties:
+            Path: /pdf-function-test
+            Method: POST
+            Auth:
+              ApiKeyRequired: true
+      Policies:
+        - AWSLambdaBasicExecutionRole
+
+  PdffunctionUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      ApiStages:
+        - ApiId: !Ref ServerlessRestApi  # The API Gateway ID created by SAM
+          Stage: Prod  # Reference the correct stage
+      UsagePlanName: PdffunctionUsagePlan
+      Description: Usage plan for the PDF function
+      Throttle:
+        RateLimit: 10
+        BurstLimit: 2
+
+  PdffunctionApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Enabled: true
+      Name: PdffunctionApiKey
+      StageKeys:
+        - RestApiId: !Ref ServerlessRestApi  # The API Gateway ID created by SAM
+          StageName: Prod  # Reference the correct stage
+
+  PdffunctionUsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref PdffunctionApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref PdffunctionUsagePlan
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
