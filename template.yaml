@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: An AWS Serverless Application Model template for a PDF processing function.
 
 Resources:
-  pdffunctiontest:
+  PdfGenerator:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
@@ -15,40 +15,50 @@ Resources:
         Api1:
           Type: Api
           Properties:
-            Path: /pdf-function-test
+            Path: /pdf-generator
             Method: POST
             Auth:
               ApiKeyRequired: true
       Policies:
         - AWSLambdaBasicExecutionRole
+        - Statement:
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:HeadObject
+            Resource: arn:aws:s3:::aws-sam-cli-managed-default-samclisourcebucket-kdvjqzoec6pg/*  # Make sure to replace with your actual bucket name
 
-  PdffunctionUsagePlan:
+  # Usage Plan with Dependency on API Stage
+  PdfGeneratorUsagePlan:
     Type: AWS::ApiGateway::UsagePlan
+    DependsOn: ServerlessRestApiProdStage  # Ensure API Gateway Stage is created first
     Properties:
       ApiStages:
         - ApiId: !Ref ServerlessRestApi  # The API Gateway ID created by SAM
           Stage: Prod  # Reference the correct stage
-      UsagePlanName: PdffunctionUsagePlan
+      UsagePlanName: PdfGeneratorUsagePlan
       Description: Usage plan for the PDF function
       Throttle:
         RateLimit: 10
         BurstLimit: 2
 
-  PdffunctionApiKey:
+  # API Key with Dependency on API Stage
+  PdfGeneratorApiKey:
     Type: AWS::ApiGateway::ApiKey
+    DependsOn: ServerlessRestApiProdStage  # Ensure API Gateway Stage is created first
     Properties:
       Enabled: true
-      Name: PdffunctionApiKey
+      Name: PdfGeneratorApiKey
       StageKeys:
         - RestApiId: !Ref ServerlessRestApi  # The API Gateway ID created by SAM
           StageName: Prod  # Reference the correct stage
 
-  PdffunctionUsagePlanKey:
+  PdfGeneratorUsagePlanKey:
     Type: AWS::ApiGateway::UsagePlanKey
     Properties:
-      KeyId: !Ref PdffunctionApiKey
+      KeyId: !Ref PdfGeneratorApiKey
       KeyType: API_KEY
-      UsagePlanId: !Ref PdffunctionUsagePlan
+      UsagePlanId: !Ref PdfGeneratorUsagePlan
 
 Outputs:
   ApiUrl:

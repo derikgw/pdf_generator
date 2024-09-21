@@ -2,25 +2,35 @@ import requests
 import os
 import base64
 
+# The template name
+template_name = "template_form1"
+
 # API Gateway endpoint (replace with your actual endpoint)
-api_url = "https://kd4mqyytdc.execute-api.us-east-1.amazonaws.com/Prod/pdf-function-test"
+api_url = "https://j020dhsikb.execute-api.us-east-1.amazonaws.com/Prod/pdf-generator"
 
 # API Key (retrieve from environment variable)
-api_key = os.getenv("PDF_FUNCTION_API_KEY")
+api_key = os.getenv("PDF_GENERATOR_API_KEY")
 
 # Check if the API key is found
 if not api_key:
-    print("API key not found. Please set the environment variable 'PDF_FUNCTION_API_KEY'.")
+    print("API key not found. Please set the environment variable 'PDF_GENERATOR_API_KEY'.")
     exit(1)
 
-# Data to be sent in the POST request (updated to only send one field)
+# Data to be sent in the POST request (updated to match the fields in your template)
 data = {
     "formData": {
-        "fname_input": "John Doe"  # Updated to match the only field in the template
+        "fname_input": "John",
+        "middle_init_input": "A",
+        "lname_input": "Doe",
+        "q_human_boolean_input": "Yes"
     }
 }
 
+# Query parameter for template name
+params = {'templateName': f"{template_name}.pdf"}
+
 try:
+    print(f"API_KEY: {api_key}")
     # Make the POST request to the API
     response = requests.post(
         api_url,
@@ -28,7 +38,8 @@ try:
             "x-api-key": api_key,
             "Content-Type": "application/json"
         },
-        json=data
+        params=params,  # Adding query parameters to specify the template
+        json=data  # Sending the form data as JSON
     )
 
     # Check if the request was successful
@@ -42,7 +53,8 @@ try:
             pdf_data = base64.b64decode(pdf_base64)
 
             # Save the raw PDF content to a file
-            output_pdf_path = "output.pdf"
+            output_pdf_name = template_name.replace("template_","")
+            output_pdf_path = f"{output_pdf_name}.pdf"
             with open(output_pdf_path, "wb") as f:
                 f.write(pdf_data)
 

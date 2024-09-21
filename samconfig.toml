@@ -1,8 +1,8 @@
 version = 0.1
 [default.deploy.parameters]
-stack_name = "pdf-function-test"
+stack_name = "pdf-generator"
 resolve_s3 = true
-s3_prefix = "pdf-function-test"
+s3_prefix = "pdf-generator"
 region = "us-east-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
