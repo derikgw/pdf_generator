@@ -7,7 +7,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      Handler: lambda_function.lambda_handler
+      Handler: pdf_generator.lambda_handler
       Runtime: python3.12
       MemorySize: 128
       Timeout: 3

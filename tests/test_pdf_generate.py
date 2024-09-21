@@ -30,7 +30,6 @@ data = {
 params = {'templateName': f"{template_name}.pdf"}
 
 try:
-    print(f"API_KEY: {api_key}")
     # Make the POST request to the API
     response = requests.post(
         api_url,
