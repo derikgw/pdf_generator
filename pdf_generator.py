@@ -1,10 +1,15 @@
 # pdf_generator.py
 import json
 import logging
-from pdf_generator_service import download_pdf_from_s3, fill_pdf_fields  # Import the service functions
+from pdf_generator_service import download_pdf, fill_pdf_fields  # Import the service functions
+import sys
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+# Set up logging to go to stdout, which Lambda captures
+logging.basicConfig(
+    level=logging.INFO,  # Capture INFO-level logs
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]  # Ensure logs are written to stdout
+)
 logger = logging.getLogger()
 
 def lambda_handler(event, context):
@@ -36,8 +41,13 @@ def lambda_handler(event, context):
         output_pdf_name = template_name.replace('.pdf', '_output.pdf')
         output_pdf_path = f'/tmp/{output_pdf_name}'
 
+        logger.info(
+            f"About to download template from S3 bucket: {bucket_name}, key: {pdf_template_s3_key}, to {pdf_template_path}")
+
         # Download the template PDF from S3 using the service function
-        download_pdf_from_s3(bucket_name, pdf_template_s3_key, pdf_template_path)
+        download_pdf(f"s3://{bucket_name}", pdf_template_s3_key, pdf_template_path)
+
+        logger.info(f"Download completed, file should be available at {pdf_template_path}")
 
         # Generate the filled-in PDF using the service function
         encoded_pdf = fill_pdf_fields(pdf_template_path, form_data, output_pdf_path)
