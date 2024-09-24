@@ -4,12 +4,14 @@ import logging
 from pdf_generator_service import download_pdf, fill_pdf_fields  # Import the service functions
 import sys
 
-# Set up logging to go to stdout, which Lambda captures
-logging.basicConfig(
-    level=logging.INFO,  # Capture INFO-level logs
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stdout)]  # Ensure logs are written to stdout
-)
+# Set up logging
+if logging.getLogger().hasHandlers():
+    # The Lambda environment pre-configures a handler logging to stderr. If a handler is already configured,
+    # `.basicConfig` does not execute. Thus we set the level directly.
+    logging.getLogger().setLevel(logging.INFO)
+else:
+    logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger()
 
 def lambda_handler(event, context):
@@ -33,7 +35,7 @@ def lambda_handler(event, context):
             }
 
         # Define S3 bucket and dynamic template path
-        bucket_name = 'aws-sam-cli-managed-default-samclisourcebucket-kdvjqzoec6pg'
+        bucket_name = 's3://aws-sam-cli-managed-default-samclisourcebucket-kdvjqzoec6pg'
         pdf_template_s3_key = f'pdf_templates/{template_name}'
 
         # Paths in Lambda's tmp directory
@@ -45,7 +47,7 @@ def lambda_handler(event, context):
             f"About to download template from S3 bucket: {bucket_name}, key: {pdf_template_s3_key}, to {pdf_template_path}")
 
         # Download the template PDF from S3 using the service function
-        download_pdf(f"s3://{bucket_name}", pdf_template_s3_key, pdf_template_path)
+        download_pdf(f"{bucket_name}", pdf_template_s3_key, pdf_template_path)
 
         logger.info(f"Download completed, file should be available at {pdf_template_path}")
 

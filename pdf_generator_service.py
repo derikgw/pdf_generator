@@ -7,12 +7,14 @@ from pypdf import PdfReader, PdfWriter
 from pypdf.generic import NameObject, TextStringObject
 import sys
 
-# Set up logging to go to stdout, which Lambda captures
-logging.basicConfig(
-    level=logging.INFO,  # Capture INFO-level logs
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stdout)]  # Ensure logs are written to stdout
-)
+# Set up logging
+if logging.getLogger().hasHandlers():
+    # The Lambda environment pre-configures a handler logging to stderr. If a handler is already configured,
+    # `.basicConfig` does not execute. Thus we set the level directly.
+    logging.getLogger().setLevel(logging.INFO)
+else:
+    logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger()
 
 # Initialize the S3 client
@@ -30,7 +32,6 @@ def download_pdf(bucket_or_path, s3_key=None, local_path=None):
     if use_s3:
         # S3 download logic
         bucket_name = bucket_or_path if not bucket_or_path.startswith("s3://") else bucket_or_path.split('/')[2]
-        s3_key = '/'.join(bucket_or_path.split('/')[3:]) if bucket_or_path.startswith("s3://") else s3_key
 
         if not local_path:
             local_path = f'/tmp/{os.path.basename(s3_key)}'
